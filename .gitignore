@@ -1,12 +1,1 @@
 __pycache__
-venv
-fishnet.ini
-*.py[cd]
-.coverage
-stockfish-*
-Stockfish
-build/
-dist/
-fishnet.egg-info/
-fishnet-*.tar.gz
-.tox/

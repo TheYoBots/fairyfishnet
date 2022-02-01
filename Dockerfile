@@ -1,9 +1,12 @@
-FROM python:slim
+FROM python:3.10
 
-LABEL maintainer "Manuel Klemenz <manuel.klemenz@gmail.com>"
+WORKDIR /fishnet
+COPY ./stockfish-x86_64-bmi2 /fishnet/stockfish-x86_64-bmi2
+COPY ./fishnet.ini /fishnet/fishnet.ini
+COPY ./fairyfishnet.py /fishnet/fairyfishnet.py
+COPY ./variants.ini /fishnet/variants.ini
 
-WORKDIR /tmp/fishnet/
-RUN pip install dumb-init && \
-    pip install fairyfishnet
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-ENTRYPOINT ["dumb-init", "--", "python", "-m", "fairyfishnet", "--no-conf"]
+RUN chmod +x stockfish-x86_64-bmi2
