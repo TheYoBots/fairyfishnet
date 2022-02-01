@@ -1346,7 +1346,7 @@ def validate_stockfish_command(stockfish_command, conf):
     logging.debug("Supported variants: %s", ", ".join(variants))
 
     required_variants = set([
-        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "coffeehouse", "coffeehill", "atomic_giveaway_hill"])
+        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "coffee_3check", "coffeerace", "coffeehouse", "coffeehill", "atomic_giveaway_hill", "anti3check"])
     missing_variants = required_variants.difference(variants)
     if missing_variants:
         raise ConfigError("Ensure you are using liantichess custom Fairy-Stockfish. "
@@ -1935,8 +1935,16 @@ extinctionValue = loss
 stalemateValue = loss
 castling = false
 
+# Hybrid of 3 check and antichess.
+[coffee_3check:3check]
+mustCapture = true
+
+# Hybrid of rk and antichess
+[coffeerace:racingkings]
+mustCapture = true
+
 # Hybrid of antichess and atomic.
-[antiatomic:atomic]
+[antiatomic:giveaway]
 blastOnCapture = true
 castling = false
 
