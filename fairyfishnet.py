@@ -1941,8 +1941,6 @@ blastOnCapture = true
 castling = false
 
 [anti3check:3check]
-startFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3+3 0 1
-checkCounting = true
 mustCapture = true
 
 # Hybrid of antichess and zh. Antichess is the base variant.
