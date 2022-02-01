@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Distributed Fairy-Stockfish analysis for pychess-variants"""
+"""Distributed Fairy-Stockfish analysis for Liantichess"""
 
 from __future__ import print_function
 from __future__ import division
@@ -121,8 +121,8 @@ __author__ = "Bajusz Tamás"
 __email__ = "gbtami@gmail.com"
 __license__ = "GPLv3+"
 
-DEFAULT_ENDPOINT = "https://pychess-variants.herokuapp.com/fishnet/"
-STOCKFISH_RELEASES = "https://api.github.com/repos/gbtami/Fairy-Stockfish/releases/latest"
+DEFAULT_ENDPOINT = "https://liantichess.herokuapp.com/fishnet/"
+STOCKFISH_RELEASES = "https://api.github.com/repos/ianfab/Fairy-Stockfish/releases/latest"
 DEFAULT_THREADS = 3
 HASH_MIN = 16
 HASH_DEFAULT = 256
@@ -150,7 +150,7 @@ def intro():
 .        `\_   ===    \.  |     |  _| | \__ \ | | | |\  |  __/ |_
 .        / /\_   \ /      |     |_|   |_|___/_| |_|_| \_|\___|\__| %s
 .        |/   \_  \|      /
-.               \________/      Distributed Fairy-Stockfish analysis for pychess-variants
+.               \________/      Distributed Fairy-Stockfish analysis for Liantichess
 """.lstrip() % __version__
 
 
@@ -779,7 +779,6 @@ class Worker(threading.Thread):
         self.stockfish_info["options"] = {}
         self.stockfish_info["options"]["threads"] = str(self.threads)
         self.stockfish_info["options"]["hash"] = str(self.memory)
-        self.stockfish_info["options"]["analysis contempt"] = "Off"
 
         # Custom options
         if self.conf.has_section("Stockfish"):
@@ -1000,7 +999,7 @@ def stockfish_filename():
     elif os.name == "os2" or sys.platform == "darwin":
         return "stockfish-osx-%s" % machine
     elif os.name == "posix":
-        return "stockfish-%s%s" % (machine, suffix)
+        return "stockfish_%s%s" % (machine, suffix)
 
 
 def download_github_release(conf, release_page, filename):
@@ -1292,7 +1291,7 @@ def configure(args):
 
     # Key
     if key is None:
-        status = "https://pychess-variants.herokuapp.com" if is_production_endpoint(conf) else "probably not required"
+        status = "https://liantichess.herokuapp.com" if is_production_endpoint(conf) else "probably not required"
         key = config_input("Personal fishnet key (append ! to force, %s): " % status,
                            lambda v: validate_key(v, conf, network=True), out)
     conf.set("Fishnet", "Key", key)
@@ -1347,15 +1346,10 @@ def validate_stockfish_command(stockfish_command, conf):
     logging.debug("Supported variants: %s", ", ".join(variants))
 
     required_variants = set([
-        "chess", "crazyhouse", "placement", "makruk", "sittuyin", "cambodian",
-        "shogi", "minishogi", "kyotoshogi", "capablanca", "capahouse",
-        "seirawan", "shouse", "grand", "grandhouse", "gothic", "gothhouse",
-        "xiangqi", "minixiangqi", "shogun", "janggi", "makpong", "orda",
-        "synochess", "shinobi", "empire", "ordamirror", "torishogi",
-        "gorogoroplus", "chak", "chennis"])
+        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "coffeehouse", "coffeehill", "atomic_giveaway_hill"])
     missing_variants = required_variants.difference(variants)
     if missing_variants:
-        raise ConfigError("Ensure you are using pychess custom Fairy-Stockfish. "
+        raise ConfigError("Ensure you are using liantichess custom Fairy-Stockfish. "
                           "Unsupported variants: %s" % ", ".join(missing_variants))
 
     return stockfish_command
@@ -1606,7 +1600,7 @@ def cmd_run(args):
         buckets[i % instances] += 1
 
     progress_reporter = ProgressReporter(len(buckets) + 4, conf)
-    progress_reporter.setDaemon(True)
+    progress_reporter.daemon = True
     progress_reporter.start()
 
     workers = [Worker(conf, bucket, memory // instances, progress_reporter) for bucket in buckets]
@@ -1614,7 +1608,7 @@ def cmd_run(args):
     # Start all threads
     for i, worker in enumerate(workers):
         worker.set_name("><> %d" % (i + 1))
-        worker.setDaemon(True)
+        worker.daemon = True
         worker.start()
 
     # Wait while the workers are running
@@ -1935,184 +1929,52 @@ def create_variants_ini(args):
     engine_dir = get_engine_dir(conf)
 
     ini_text = textwrap.dedent("""\
-# Hybrid variant of Grand-chess and crazyhouse, using Grand-chess as a template
-[grandhouse:grand]
-startFen = r8r/1nbqkcabn1/pppppppppp/10/10/10/10/PPPPPPPPPP/1NBQKCABN1/R8R[] w - - 0 1
-pieceDrops = true
-capturesToHand = true
-
-# Hybrid variant of Gothic-chess and crazyhouse, using Capablanca as a template
-[gothhouse:capablanca]
-startFen = rnbqckabnr/pppppppppp/10/10/10/10/PPPPPPPPPP/RNBQCKABNR[] w KQkq - 0 1
-pieceDrops = true
-capturesToHand = true
-
-[shogun:crazyhouse]
-variantTemplate = shogi
-pieceToCharTable = PNBR.F.....++++.+Kpnbr.f.....++++.+k
-pocketSize = 8
-startFen = rnb+fkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB+FKBNR[] w KQkq - 0 1
-commoner = c
-centaur = g
-archbishop = a
-chancellor = m
-fers = f
-promotionRank = 6
-promotionLimit = g:1 a:1 m:1 q:1
-promotionPieceTypes = -
-promotedPieceType = p:c n:g b:a r:m f:q
-mandatoryPawnPromotion = false
-firstRankPawnDrops = true
-promotionZonePawnDrops = true
-whiteDropRegion = *1 *2 *3 *4 *5
-blackDropRegion = *4 *5 *6 *7 *8
-immobilityIllegal = true
-
-[orda:chess]
-pieceToCharTable = PNBRQ..AH...........LKp...q..ah.y.........lk
-centaur = h
-knibis = a
-kniroo = l
-silver = y
-promotionPieceTypes = qh
-startFen = lhaykahl/8/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1
-flagPiece = k
-whiteFlag = *8
-blackFlag = *1
-
-[synochess:pocketknight]
-pieceToCharTable = PNBRQAE...SCH........Kpnbrqae...sch........k
-pocketSize = 8
-janggiCannon = c
-soldier = s
-horse = h
-fersAlfil = e
-commoner = a
-startFen = rneakenr/8/1c4c1/1ss2ss1/8/8/PPPPPPPP/RNBQKBNR[ss] w KQ - 0 1
-stalemateValue = loss
-perpetualCheckIllegal = true
-flyingGeneral = true
-blackDropRegion = *5
-flagPiece = k
-whiteFlag = *8
-blackFlag = *1
-
-[shinobi:crazyhouse]
-variantTemplate = shogi
-pieceToCharTable = PNBRQ.DJMLH.....CKpnbrq.djmlh.....ck
-pocketSize = 8
-commoner = c
-bers = d
-archbishop = j
-fers = m
-shogiKnight = h
-lance = l
-promotionRank = 7
-promotionPieceTypes = -
-promotedPieceType = p:c m:b h:n l:r
-mandatoryPiecePromotion = true
-stalemateValue = loss
-perpetualCheckIllegal = true
-startFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/LH1CK1HL[LHMMDJ] w kq - 0 1
-capturesToHand = false
-whiteDropRegion = *1 *2 *3 *4
-immobilityIllegal = true
-flagPiece = k
-whiteFlag = *8
-blackFlag = *1
-
-[ordamirror:chess]
-pieceToCharTable = P...Q..AH.F.........LKp...q..ah.f.........lk
-centaur = h
-knibis = a
-kniroo = l
-customPiece1 = f:mQcN
-promotionPieceTypes = lhaf
-startFen = lhafkahl/8/pppppppp/8/8/PPPPPPPP/8/LHAFKAHL w - - 0 1
-flagPiece = k
-whiteFlag = *8
-blackFlag = *1
-
-[empire:chess]
-pieceToCharTable = PNBRQ.....ST.C.D.E...Kpnbrq.....st.c.d.e...k
-customPiece1 = e:mQcN
-customPiece2 = c:mQcB
-customPiece3 = t:mQcR
-customPiece4 = d:mQcK
-soldier = s
-promotionPieceTypes = q
-startFen = rnbqkbnr/pppppppp/8/8/8/PPPSSPPP/8/TECDKCET w kq - 0 1
-stalemateValue = loss
-nFoldValue = loss
-flagPiece = k
-whiteFlag = *8
-blackFlag = *1
-flyingGeneral = true
-
-[gorogoroplus:gorogoro]
-startFen = sgkgs/5/1ppp1/1PPP1/5/SGKGS[LNln] w 0 1
-lance = l
-shogiKnight = n
-promotedPieceType = l:g n:g
-
-[chak]
-maxRank = 9
-maxFile = 9
-rook = r
-knight = v
-centaur = j
-immobile = o
-customPiece1 = s:FvW
-customPiece2 = q:pQ
-customPiece3 = d:mQ2cQ2
-customPiece4 = p:fsmWfceF
-customPiece5 = k:WF
-customPiece6 = w:FvW
-startFen = rvsqkjsvr/4o4/p1p1p1p1p/9/9/9/P1P1P1P1P/4O4/RVSJKQSVR w - - 0 1
-mobilityRegionWhiteCustomPiece6 = *5 *6 *7 *8 *9
-mobilityRegionWhiteCustomPiece3 = *5 *6 *7 *8 *9
-mobilityRegionBlackCustomPiece6 = *1 *2 *3 *4 *5
-mobilityRegionBlackCustomPiece3 = *1 *2 *3 *4 *5
-promotionRank = 5
-promotionPieceTypes = -
-mandatoryPiecePromotion = true
-promotedPieceType = p:w k:d
+# Lose at anti-chess win at anti-antichess.
+[anti_antichess:giveaway]
 extinctionValue = loss
-extinctionPieceTypes = kd
-extinctionPseudoRoyal = true
-flagPiece = d
-whiteFlag = e8
-blackFlag = e2
-nMoveRule = 50
-nFoldRule = 3
-nFoldValue = draw
-stalemateValue = win
+stalemateValue = loss
+castling = false
 
-[chennis]
-maxRank = 7
-maxFile = 7
-mobilityRegionWhiteKing = b1 c1 d1 e1 f1 b2 c2 d2 e2 f2 b3 c3 d3 e3 f3 b4 c4 d4 e4 f4
-mobilityRegionBlackKing = b4 c4 d4 e4 f4 b5 c5 d5 e5 f5 b6 c6 d6 e6 f6 b7 c7 d7 e7 f7
-customPiece1 = p:fmWfceF
-cannon = c
-commoner = m
-fers = f
-soldier = s
-king = k
-bishop = b
-knight = n
-rook = r
-promotionPieceTypes = -
-promotedPieceType = p:r f:c s:b m:n
-promotionRank = 1
-startFen = 1fkm3/1p1s3/7/7/7/3S1P1/3MKF1[] w - 0 1
+# Hybrid of antichess and atomic.
+[antiatomic:atomic]
+blastOnCapture = true
+castling = false
+
+# Hybrid of antichess and zh. Antichess is the base variant.
+[antihouse:giveaway]
 pieceDrops = true
 capturesToHand = true
-pieceDemotion = true
-mandatoryPiecePromotion = true
-dropPromoted = true
+pocketSize = 6
 castling = false
-stalemateValue = loss
+
+# antichess with a pawn structure following horde rules.
+[antipawns:horde]
+king = -
+commoner = k
+startFen = pppppppp/pppppppp/pppppppp/8/8/PPPPPPPP/PPPPPPPP/PPPPPPPP w - - 0 1
+promotionPieceTypes = nbrqk
+stalemateValue = win
+extinctionValue = win
+mustCapture = true
+extinctionPieceTypes = *
+extinctionPseudoRoyal = false
+castling = false
+
+# Hybrid of antichess and zh. Zh is th base variant.
+[coffeehouse:crazyhouse]
+mustCapture = true
+
+# Hybrid variant of antichess and king of the hill
+[coffeehill:kingofthehill]
+mustCapture = true
+
+# Hybrid variant of antichess, atomic and king of the hill
+[atomic_giveaway_hill:giveaway]
+blastOnCapture = true
+flagPiece = k
+whiteFlag = d4 e4 d5 e5
+blackFlag = d4 e4 d5 e5
+castling = false
 """)
 
     ini_file = os.path.join(engine_dir, "variants.ini")
@@ -2138,7 +2000,7 @@ def main(argv):
     g.add_argument("--memory", help="total memory (MB) to use for engine hashtables")
 
     g = parser.add_argument_group("advanced")
-    g.add_argument("--endpoint", help="pychess-variants http endpoint (default: %s)" % DEFAULT_ENDPOINT)
+    g.add_argument("--endpoint", help="liantichess http endpoint (default: %s)" % DEFAULT_ENDPOINT)
     g.add_argument("--engine-dir", help="engine working directory")
     g.add_argument("--stockfish-command", help="stockfish command (default: download precompiled Stockfish)")
     g.add_argument("--threads-per-process", "--threads", type=int, dest="threads", help="hint for the number of threads to use per engine process (default: %d)" % DEFAULT_THREADS)
