@@ -1346,7 +1346,7 @@ def validate_stockfish_command(stockfish_command, conf):
     logging.debug("Supported variants: %s", ", ".join(variants))
 
     required_variants = set([
-        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "coffee_3check", "coffeerace", "coffeehouse", "coffeehill", "atomic_giveaway_hill", "anti3check"])
+        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "antiplacement", "antihoppelpoppel", "coffee_3check", "coffeerace", "coffeehouse", "coffeehill", "atomic_giveaway_hill"])
     missing_variants = required_variants.difference(variants)
     if missing_variants:
         raise ConfigError("Ensure you are using liantichess custom Fairy-Stockfish. "
@@ -1935,18 +1935,11 @@ extinctionValue = loss
 stalemateValue = loss
 castling = false
 
-# Hybrid of 3 check and antichess.
-[coffee_3check:3check]
-mustCapture = true
-
-# Hybrid of rk and antichess
-[coffeerace:racingkings]
-mustCapture = true
-
 # Hybrid of antichess and atomic.
 [antiatomic:giveaway]
 blastOnCapture = true
 castling = false
+extinctionOpponentPieceCount = 1
 
 # Hybrid of antichess and zh. Antichess is the base variant.
 [antihouse:giveaway]
@@ -1967,6 +1960,40 @@ mustCapture = true
 extinctionPieceTypes = *
 extinctionPseudoRoyal = false
 castling = false
+
+# Hybrid of antichess and placement.
+[antiplacement:placement]
+king = -
+commoner = k
+promotionPieceTypes = nrqk
+mustCapture = true
+stalemateValue = win
+extinctionValue = win
+extinctionPieceTypes = *
+extinctionPseudoRoyal = false
+castling = false
+
+# Hybrid of antichess and hoppelpoppel
+[antihoppelpoppel:hoppelpoppel]
+king = -
+commoner = k
+promotionPieceTypes = nrqk
+mustCapture = true
+stalemateValue = win
+extinctionValue = win
+extinctionPieceTypes = *
+extinctionPseudoRoyal = false
+castling = false
+
+# Hybrid of 3 check and antichess.
+[coffee_3check:3check]
+startFen = rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 3+3 0 1
+checkCounting = true
+mustCapture = true
+
+# Hybrid of rk and antichess
+[coffeerace:racingkings]
+mustCapture = true
 
 # Hybrid of antichess and zh. Zh is th base variant.
 [coffeehouse:crazyhouse]
