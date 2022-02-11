@@ -6,23 +6,25 @@ Based on [fairyfishnet](https://github.com/gbtami/fairyfishnet).
 
 #### Linux
 
-You need to have Fairy Stockfish largeboards for linux ready. To achieve this you can use the provided script [`build-stockfish.sh`](https://github.com/gbtami/fairyfishnet/blob/master/build-stockfish.sh). The script first clones [Fairy Stockfish github](https://github.com/ianfab/Fairy-Stockfish) and then runs the make command either with popcnt or bmi2 depending on your cpu. You can also try using the provided precompiled 'fairy-stockfish-largeboards' for intel with bmi2, if that works for you or you can [compile Fairy Stockfish largeboards seperately](https://github.com/ianfab/Fairy-Stockfish/wiki/Compiling-Fairy-Stockfish) or download Fairy Stockfish largeboards from the [latest release](https://github.com/ianfab/Fairy-Stockfish/releases).
-To test that engine works on you machine just run the engine `./fairy-stockfish-largeboards`.
+You need to have Fairy Stockfish for linux ready. To achieve this you can use the provided script [`build-stockfish.sh`](https://github.com/gbtami/fairyfishnet/blob/master/build-stockfish.sh). The script first clones [Fairy Stockfish github](https://github.com/ianfab/Fairy-Stockfish) and then runs the make command either with popcnt or bmi2 depending on your cpu. You can also try using the provided precompiled 'fairy-stockfish-largeboards' for intel with bmi2, if that works for you or you can [compile Fairy Stockfish seperately](https://github.com/ianfab/Fairy-Stockfish/wiki/Compiling-Fairy-Stockfish) or download Fairy Stockfish from the [latest release](https://github.com/ianfab/Fairy-Stockfish/releases).
+To test that engine works on you machine just run the engine `./stockfish-x86_64-bmi2`.
 
 ```
-usi
+uci
 isready
 ```
 after readyOk appears run:
 `bench`
 If the engine didn't crash, it probably works.
 
-If you have Fairy Stockfish largeboards ready and python3 installed just run,
+If you have Fairy Stockfish ready and python3 installed just run,
 ```
 pip install -r requirements.txt
 python ./fairyfishnet.py  -k fishentkey # Replace 'fishnetkey' with your Fairyfishnet key.
 ```
-It will ask you about what working directory you want to use, path to the engine and similar things, leaving everything default should be fine. To get your Fairyfishnet key you either message SriMethan#7290 on discord or message [@SriMethan](https://lichess.org/@/SriMethan) at [lichess](https://lichess.org).
+You might face some errors after running `python ./fairyfishnet.py  -k fishentkey`. If you do face any errors then delete the [fishnet.ini](/fishnet.ini) file and then run `python ./fairyfishnet.py`, it will ask you about what working directory you want to use, path to the engine and similar things, leaving everything default should be fine.
+
+To get your Fairyfishnet key you either message SriMethan#7290 on discord or message [@SriMethan](https://lichess.org/@/SriMethan) at [lichess](https://lichess.org).
 
 If you want to go over this setup step again, just delete the `fishnet.ini` file.
 
@@ -30,23 +32,25 @@ If you want to go over this setup step again, just delete the `fishnet.ini` file
 
 Fairyfishnet should works on windows the same way it does on linux, though you require make a few small changes.
 
-Firstly, you need to get Fairy Stockfish largeboards for windows, which you will find in [Fairy Stockfish's releases](https://github.com/ianfab/Fairy-Stockfish/releases). You can also try using the provided precompiled 'fairy-stockfish-largeboards.exe' for intel with bmi2, if that works for you or [compile Fairy Stockfish largeboards seperately](https://github.com/ianfab/Fairy-Stockfish/wiki/Compiling-Fairy-Stockfish). To test that engine works on your machine just run the engine `\fairy-stockfish-largeboards.exe`. 
+Firstly, you need to get Fairy Stockfish for windows, which you will find in [Fairy Stockfish's releases](https://github.com/ianfab/Fairy-Stockfish/releases). You can also try using the provided precompiled 'stockfish-windows-amd64-bmi2.exe' for amd64 with bmi2, if that works for you or [compile Fairy Stockfish seperately](https://github.com/ianfab/Fairy-Stockfish/wiki/Compiling-Fairy-Stockfish). To test that engine works on your machine just run the engine `\stockfish-windows-amd-bmi2.exe`. 
 ```
-usi
+uci
 isready
 ```
 after `readyOk` appears run: 
 ```
 bench
 ```
-If the engine didn't crash, it probably works. Make sure to add the windows version of Fairy Stockfish largeboards that you have downloaded in the fairyfishnetnet directory.
+If the engine didn't crash, it probably works. Make sure to add the windows version of Fairy Stockfish that you have downloaded in the fairyfishnet directory incase you have downloaded it seperately.
 
-If you have Fairy Stockfish largeboards ready and python3 installed just run,
+If you have Fairy Stockfish ready and python3 installed just run,
 ```
 pip install -r requirements.txt
 python fairyfishnet.py -k fishentkey # Replace 'fishnetkey' with your Fairyfishnet key.
 ```
-It will ask you about what working directory you want to use, path to the engine and similar things, leaving everything default should be fine. To get your Fairyfishnet key you either message SriMethan#7290 on discord or message [@SriMethan](https://lichess.org/@/SriMethan) at [lichess](https://lichess.org).
+You might face some errors after running `python ./fairyfishnet.py  -k fishentkey`. If you do face any errors then delete the [fishnet.ini](/fishnet.ini) file and then run `python ./fairyfishnet.py`, it will ask you about what working directory you want to use, path to the engine and similar things, leaving everything default should be fine.
+
+To get your Fairyfishnet key you either message SriMethan#7290 on discord or message [@SriMethan](https://lichess.org/@/SriMethan) at [lichess](https://lichess.org).
 
 If you want to go over this setup step again, just delete the `fishnet.ini` file.
 
