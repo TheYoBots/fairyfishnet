@@ -20,7 +20,7 @@ If the engine didn't crash, it probably works.
 If you have Fairy Stockfish ready and python3 installed just run,
 ```
 pip install -r requirements.txt
-python ./fairyfishnet.py  -k fishentkey # Replace 'fishnetkey' with your Fairyfishnet key.
+python3 ./fairyfishnet.py  -k fishentkey # Replace 'fishnetkey' with your Fairyfishnet key.
 ```
 You might face some errors after running `python ./fairyfishnet.py  -k fishentkey`. If you do face any errors then delete the [fishnet.ini](/fishnet.ini) file and then run `python ./fairyfishnet.py`, it will ask you about what working directory you want to use, path to the engine and similar things, leaving everything default should be fine.
 
