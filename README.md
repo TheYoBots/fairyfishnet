@@ -28,7 +28,7 @@ If you want to go over this setup step again, just delete the `fishnet.ini` file
 
 #### Windows
 
-Shoginet should works on windows the same way it does on linux, though you require make a few small changes.
+Fairyfishnet should works on windows the same way it does on linux, though you require make a few small changes.
 
 Firstly, you need to get Fairy Stockfish largeboards for windows, which you will find in [Fairy Stockfish's releases](https://github.com/ianfab/Fairy-Stockfish/releases). You can also try using the provided precompiled 'fairy-stockfish-largeboards.exe' for intel with bmi2, if that works for you or [compile Fairy Stockfish largeboards seperately](https://github.com/ianfab/Fairy-Stockfish/wiki/Compiling-Fairy-Stockfish). To test that engine works on your machine just run the engine `\fairy-stockfish-largeboards.exe`. 
 ```
@@ -39,7 +39,7 @@ after `readyOk` appears run:
 ```
 bench
 ```
-If the engine didn't crash, it probably works. Make sure to add the windows version of Fairy Stockfish largeboards that you have downloaded in the shoginet directory.
+If the engine didn't crash, it probably works. Make sure to add the windows version of Fairy Stockfish largeboards that you have downloaded in the fairyfishnetnet directory.
 
 If you have Fairy Stockfish largeboards ready and python3 installed just run,
 ```
@@ -67,4 +67,4 @@ Now that you have all you need, all you need to do is create a [new app in herok
 
 ## How it works
 
-Every once in a while shoginet running on your computer asks [liantichess](https://liantichess.herokuapp.com/) for some work. If someone requested analysis of their game on [liantichess](https://liantichess.herokuapp.com/), you may receive this work. The work is a simple json containing mainly the initial position and sequence of moves. You then run engine analysis on these data and send the results back to [liantichess](https://liantichess.herokuapp.com/).
+Every once in a while fairyfishnet is running on your computer asks [liantichess](https://liantichess.herokuapp.com/) for some work. If someone requested analysis of their game on [liantichess](https://liantichess.herokuapp.com/), you may receive this work. The work is a simple json containing mainly the initial position and sequence of moves. You then run engine analysis on these data and send the results back to [liantichess](https://liantichess.herokuapp.com/).
