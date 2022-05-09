@@ -1,2 +1,4 @@
-pyffish==0.0.71
-requests
+requests==2.27.1
+pyffish==0.0.72
+gdown==4.4.0
+beautifulsoup4==4.11.1

@@ -44,6 +44,9 @@ import signal
 import ctypes
 import string
 
+from bs4 import BeautifulSoup
+import gdown
+
 try:
     import requests
 except ImportError:
@@ -98,7 +101,7 @@ try:
     try:
         print(sf.version())
     except Exception:
-        print("fairyfishnet requires pyffish >=0.0.57", file=sys.stderr)
+        print("fairyfishnet requires pyffish", file=sys.stderr)
         raise
 
 except ImportError:
@@ -114,7 +117,7 @@ except NameError:
     DEAD_ENGINE_ERRORS = (EOFError, IOError)
 
 
-__version__ = "1.16.8"
+__version__ = "1.16.16"
 
 __author__ = "Bajusz Tamás"
 __email__ = "gbtami@gmail.com"
@@ -137,9 +140,30 @@ LVL_SKILL = [-4, 0, 3, 6, 10, 14, 16, 18, 20]
 LVL_MOVETIMES = [50, 50, 100, 150, 200, 300, 400, 500, 1000]
 LVL_DEPTHS = [1, 1, 1, 2, 3, 5, 8, 13, 22]
 
-NNUE_NET = {
-    "losers": "86d93b2d22a3",
-}
+NNUE_NET = {}
+
+required_variants = set([
+    "antichess",
+    "losers",
+    "anti_antichess",
+    "antiatomic",
+    "antihouse",
+    "antipawns",
+    "antiplacement",
+    "coffee_3check",
+    "coffeerace",
+    "coffeehouse",
+    "coffeehill",
+    "atomic_giveaway_hill",
+    "antishinobi",
+    "antiempire",
+    "antisynochess",
+    "antiorda",
+    "antigrandhouse",
+    "antichak",
+    "anticapablanca",
+    "antishogun",
+])
 
 
 def intro():
@@ -546,16 +570,16 @@ def go(p, position, moves, movetime=None, clock=None, depth=None, nodes=None, va
             logging.warning("Unexpected engine response to go: %s %s", command, arg)
 
 
-def set_variant_options(p, variant, chess960):
+def set_variant_options(p, variant, chess960, nnue):
     variant = variant.lower()
 
     setoption(p, "Protocol", "uci")
 
     setoption(p, "UCI_Chess960", chess960)
 
-    if variant in NNUE_NET:
+    if (variant in NNUE_NET) and nnue:
         vari = variant
-        eval_file = "%s-%s.nnue" % (vari, NNUE_NET[vari])
+        eval_file = "%s-%s.nnue" % (vari, NNUE_NET.get(vari, ""))
         if os.path.isfile(eval_file):
             setoption(p, "EvalFile", eval_file)
 
@@ -841,11 +865,12 @@ class Worker(threading.Thread):
         variant = job.get("variant", "standard")
         chess960 = job.get("chess960", False)
         moves = job["moves"].split(" ")
+        nnue = job.get("nnue", True)
 
         logging.debug("Playing %s (%s) with lvl %d",
                       self.job_name(job), variant, lvl)
 
-        set_variant_options(self.stockfish, variant, chess960)
+        set_variant_options(self.stockfish, variant, chess960, nnue)
         setoption(self.stockfish, "Skill Level", LVL_SKILL[lvl])
         setoption(self.stockfish, "UCI_AnalyseMode", False)
         send(self.stockfish, "ucinewgame")
@@ -876,12 +901,13 @@ class Worker(threading.Thread):
         variant = job.get("variant", "standard")
         chess960 = job.get("chess960", False)
         moves = job["moves"].split(" ")
+        nnue = job.get("nnue", True)
 
         result = self.make_request()
         result["analysis"] = [None for _ in range(len(moves) + 1)]
         start = last_progress_report = time.time()
 
-        set_variant_options(self.stockfish, variant, chess960)
+        set_variant_options(self.stockfish, variant, chess960, nnue)
         setoption(self.stockfish, "Skill Level", 20)
         setoption(self.stockfish, "UCI_AnalyseMode", True)
         send(self.stockfish, "ucinewgame")
@@ -1347,8 +1373,6 @@ def validate_stockfish_command(stockfish_command, conf):
 
     logging.debug("Supported variants: %s", ", ".join(variants))
 
-    required_variants = set([
-        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "antiplacement", "coffee_3check", "coffeerace", "coffeehouse", "coffeehill", "atomic_giveaway_hill", "antishinobi", "antiempire", "antisynochess", "antiorda", "antigrandhouse", "antichak", "anticapablanca", "antishogun"])
     missing_variants = required_variants.difference(variants)
     if missing_variants:
         raise ConfigError("Ensure you are using liantichess custom Fairy-Stockfish. "
@@ -1373,7 +1397,67 @@ def parse_bool(inp, default=False):
         raise ConfigError("Not a boolean value: %s", inp)
 
 
+def update_nnue():
+    url = "https://github.com/ianfab/Fairy-Stockfish/wiki/List-of-networks"
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+    for link in soup.find_all(href=re.compile("^https://drive.google.com/file")):
+        parts = link.text.split("-")
+        variant, nnue = parts[0], parts[1]
+        # remove .nnue suffix
+        if nnue.endswith(".nnue"):
+            nnue = nnue[:-5]
+
+        if variant in required_variants:
+            NNUE_NET[variant] = nnue
+
+            eval_file = "%s-%s.nnue" % (variant, NNUE_NET[variant])
+            if os.path.isfile(eval_file):
+                print("%s OK" % eval_file)
+            else:
+                drive_id = link.get('href').split("/")[-2]
+                print("%s downloading drive id %s" % (eval_file, drive_id))
+                gdown.download(id=drive_id, output=eval_file, quiet=False)
+
+                if not os.path.isfile(eval_file):
+                    print("Failed to download %s" % eval_file)
+                    sys.exit(0)
+
+    # Standard chess stockfish nnue
+    link = soup.find(href=re.compile("^https://tests.stockfishchess.org/api/nn/"))
+    parts = link.text.split("-")
+    variant, nnue = parts[0], parts[1]
+    # remove .nnue suffix
+    if nnue.endswith(".nnue"):
+        nnue = nnue[:-5]
+    NNUE_NET["nn"] = nnue
+
+    eval_file = "%s-%s.nnue" % (variant, NNUE_NET[variant])
+    if os.path.isfile(eval_file):
+        print("%s OK" % eval_file)
+    else:
+        href = link.get("href")
+        print("%s downloading from %s" % (eval_file, href))
+        download = requests.get(href, headers={}, stream=True)
+        progress = 0
+        size = 46603 * 1024
+        with open(eval_file, 'wb') as fd:
+            for chunk in download.iter_content(chunk_size=1024):
+                fd.write(chunk)
+                progress += len(chunk)
+                if sys.stderr.isatty():
+                    sys.stderr.write("\rDownloading %s: %d/%d (%d%%)" % (
+                        eval_file, progress, size,
+                        progress * 100 / size))
+                    sys.stderr.flush()
+        if not os.path.isfile(eval_file):
+            print("Failed to download %s" % eval_file)
+            sys.exit(0)
+
+
 def validate_nnue():
+    update_nnue()
+
     nnue_link = "https://github.com/ianfab/Fairy-Stockfish/wiki/List-of-networks"
     for variant in NNUE_NET:
         nnue_file = "%s-%s.nnue" % (variant, NNUE_NET[variant])
