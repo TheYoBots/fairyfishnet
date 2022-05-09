@@ -1348,7 +1348,7 @@ def validate_stockfish_command(stockfish_command, conf):
     logging.debug("Supported variants: %s", ", ".join(variants))
 
     required_variants = set([
-        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "antiplacement", "antihoppelpoppel", "coffee_3check", "coffeerace", "coffeehouse", "coffeehill", "atomic_giveaway_hill", "antishinobi", "antiempire", "antisynochess", "antiorda", "antigrandhouse", "antichak", "anticapablanca", "antishogun"])
+        "antichess", "losers", "anti_antichess", "antiatomic", "antihouse", "antipawns", "antiplacement", "coffee_3check", "coffeerace", "coffeehouse", "coffeehill", "atomic_giveaway_hill", "antishinobi", "antiempire", "antisynochess", "antiorda", "antigrandhouse", "antichak", "anticapablanca", "antishogun"])
     missing_variants = required_variants.difference(variants)
     if missing_variants:
         raise ConfigError("Ensure you are using liantichess custom Fairy-Stockfish. "
